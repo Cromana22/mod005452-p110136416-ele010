@@ -1,6 +1,7 @@
 package com.example.flexitodo
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,11 +15,10 @@ import androidx.compose.ui.Modifier
 import com.example.flexitodo.ui.theme.FlexitodoTheme
 import com.example.flexitodo.*
 
-@OptIn(ExperimentalMaterial3Api::class)
-class MainActivity : ComponentActivity() {
+@ExperimentalMaterial3Api
+class AddTodo : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             FlexitodoTheme {
                 // A surface container using the 'background' color from the theme
@@ -40,11 +40,11 @@ class MainActivity : ComponentActivity() {
             content = {
                 Column {
                     Row {
-                        Greeting("Main Page")
+                        Greeting("Add New Todo")
                     }
                     Row {
                         NavButton(page = Settings::class.java, text = "Settings")
-                        NavButton(page = AddTodo::class.java, text = "Add New")
+                        NavButton(page = MainActivity::class.java, text = "Home")
                     }
                 }
             }
