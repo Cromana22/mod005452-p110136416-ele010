@@ -1,6 +1,7 @@
 package com.example.flexitodo.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.navigation.Screens
+import java.time.LocalDateTime
 
 @ExperimentalMaterial3Api
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -47,5 +49,11 @@ fun TopAppBarAddNew(navController: NavController) {
 fun ContentAddNew() {
     Row {
         Text("This is some content.")
+        Button(
+            onClick = {
+                val dt = LocalDateTime.now()
+                Log.i("Save", "Someone saved something at $dt.") },
+            content = { Text("Log Something")}
+        )
     }
 }
