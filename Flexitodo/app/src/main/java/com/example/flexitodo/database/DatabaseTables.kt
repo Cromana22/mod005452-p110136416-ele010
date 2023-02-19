@@ -39,6 +39,9 @@ data class TodoItem(
 
     @ColumnInfo(name = "item_notes")
     var itemNotes: String = "",
+
+    @ColumnInfo(name = "item_complete")
+    var itemComplete: Boolean = false,
 )
 
 @Entity(tableName = "todo_item_attachment", foreignKeys = [

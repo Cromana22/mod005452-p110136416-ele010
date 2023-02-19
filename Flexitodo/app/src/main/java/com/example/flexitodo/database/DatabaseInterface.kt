@@ -50,6 +50,10 @@ interface DatabaseInterface {
     @Query("SELECT * from todo_item_attachment WHERE attachmentId = :key")
     fun getAttachment(key: Long): TodoItemAttachment?
 
+    //Update completion status
+    @Query("UPDATE todo_item SET item_complete = NOT item_complete WHERE itemId = :key")
+    fun changeComplete(key: Long)
+
     // Clear all todos from a list
     @Query("DELETE FROM todo_item WHERE list_id = :key")
     fun clearTodoItems(key: Long)
