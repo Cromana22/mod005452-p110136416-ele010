@@ -48,6 +48,7 @@ class DatabaseTest {
 
         val getTodoLists = databaseInterface.getTodoLists()
         assertEquals(getTodoLists.size, 1)
+        Log.i("INSERTED", getTodoLists.toString())
 
         // Insert Item
         val listId = getTodoLists[0].listId
@@ -56,6 +57,7 @@ class DatabaseTest {
 
         val getTodoItems = databaseInterface.getTodoItems(listId)
         assertEquals(getTodoItems.size, 1)
+        Log.i("INSERTED", getTodoItems.toString())
 
         // Insert Attachment
         val itemId = getTodoItems[0].itemId
@@ -64,6 +66,7 @@ class DatabaseTest {
 
         val getTodoAttachments = databaseInterface.getTodoItemAttachments(itemId)
         assertEquals(getTodoAttachments.size, 1)
+        Log.i("INSERTED", getTodoAttachments.toString())
 
         //Toggle Completion Status
         var completionStatus = databaseInterface.getTodoItemDetails(itemId)?.itemComplete

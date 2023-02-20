@@ -5,11 +5,14 @@ import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.navigation.Screens
@@ -19,11 +22,13 @@ import java.time.LocalDateTime
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddTodo(navController: NavController) {
+    val viewModel: AddTodoViewModel = viewModel()
+
     Scaffold(
         topBar = { TopAppBarAddNew(navController) },
         content = { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
-                ContentAddNew()
+                ContentAddNew(viewModel)
             }
         }
     )
@@ -46,14 +51,38 @@ fun TopAppBarAddNew(navController: NavController) {
 
 @ExperimentalMaterial3Api
 @Composable
-fun ContentAddNew() {
+fun ContentAddNew(viewModel: AddTodoViewModel) {
+    val todoListsState = viewModel.allTodoLists.observeAsState()
+    val numTodoLists = todoListsState.value?.size
+
     Row {
-        Text("This is some content.")
-        Button(
-            onClick = {
-                val dt = LocalDateTime.now()
-                Log.i("Save", "Someone saved something at $dt.") },
-            content = { Text("Log Something")}
-        )
+        LazyColumn {
+            item{
+                Text("This is some content.")
+            }
+
+            if (numTodoLists != null) {
+                items(numTodoLists) { todoListsState.value!!.forEach {
+                    todoList -> Text("${todoList.listName}")
+                } }
+            }
+
+            item{
+                Button(
+                    onClick = {
+                        val dt = LocalDateTime.now()
+                        Log.i("Save", "Someone saved something at $dt.") },
+                    content = { Text("Log Something")}
+                )
+            }
+
+            item{
+                Button(
+                    onClick = {
+                        Log.i("Save", "SOMETHING") },
+                    content = { Text("Create a todo list")}
+                )
+            }
+        }
     }
 }

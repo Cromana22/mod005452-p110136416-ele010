@@ -1,5 +1,6 @@
 package com.example.flexitodo.database
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -32,19 +33,19 @@ interface DatabaseInterface {
 
     // Get a list of all lists.
     @Query("SELECT * from todo_list")
-    fun getTodoLists(): List<TodoList>
+    fun getTodoLists(): LiveData<List<TodoList>>
 
     // Get all items in a list for main page, today first.
     @Query("SELECT * from todo_item WHERE list_id = :key ORDER BY item_date ASC")
-    fun getTodoItems(key: Long): List<TodoItem>
+    fun getTodoItems(key: Long): LiveData<List<TodoItem>>
 
     // Get all details of a item for item display / edit page.
     @Query("SELECT * from todo_item WHERE itemId = :key")
-    fun getTodoItemDetails(key: Long): TodoItem?
+    fun getTodoItemDetails(key: Long): LiveData<TodoItem?>
 
     // Get all attachments of a item for item display / edit page.
     @Query("SELECT * from todo_item_attachment WHERE item_id = :key")
-    fun getTodoItemAttachments(key: Long): List<TodoItemAttachment>
+    fun getTodoItemAttachments(key: Long): LiveData<List<TodoItemAttachment>>
 
     // Get attachment details so can view or delete the actual file
     @Query("SELECT * from todo_item_attachment WHERE attachmentId = :key")

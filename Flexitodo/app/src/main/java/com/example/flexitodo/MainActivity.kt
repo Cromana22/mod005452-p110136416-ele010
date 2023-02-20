@@ -9,12 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.flexitodo.ui.theme.FlexitodoTheme
 import com.example.flexitodo.navigation.NavGraph
-import com.example.flexitodo.*
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
 
         setContent {
             FlexitodoTheme {
