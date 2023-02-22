@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.example.flexitodo.database.DatabaseInitializer
 import com.example.flexitodo.ui.theme.FlexitodoTheme
 import com.example.flexitodo.navigation.NavGraph
 
@@ -14,7 +15,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
+        DatabaseInitializer().initDatabase(this)
 
         setContent {
             FlexitodoTheme {

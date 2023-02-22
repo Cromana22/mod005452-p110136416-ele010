@@ -18,7 +18,7 @@ import java.io.IOException
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class DatabaseTest {
 
-    private lateinit var databaseInterface: DatabaseInterface
+    private lateinit var databaseInterfaceTest: DatabaseInterfaceTest
     private lateinit var db: DatabaseClass
 
     @Before
@@ -30,7 +30,7 @@ class DatabaseTest {
                 // Allowing main thread queries, just for testing.
                 .allowMainThreadQueries()
                 .build()
-        databaseInterface = db.databaseInterface
+        databaseInterfaceTest = db.databaseInterfaceTest
     }
 
     @After
@@ -44,40 +44,40 @@ class DatabaseTest {
     fun aInsertAndToggle() {
         // Insert List
         val todoList = TodoList()
-        databaseInterface.insertList(todoList)
+        databaseInterfaceTest.insertList(todoList)
 
-        val getTodoLists = databaseInterface.getTodoLists()
+        val getTodoLists = databaseInterfaceTest.getTodoLists()
         assertEquals(getTodoLists.size, 1)
         Log.i("INSERTED", getTodoLists.toString())
 
         // Insert Item
         val listId = getTodoLists[0].listId
         val todoItem = TodoItem(listId = listId)
-        databaseInterface.insertItem(todoItem)
+        databaseInterfaceTest.insertItem(todoItem)
 
-        val getTodoItems = databaseInterface.getTodoItems(listId)
+        val getTodoItems = databaseInterfaceTest.getTodoItems(listId)
         assertEquals(getTodoItems.size, 1)
         Log.i("INSERTED", getTodoItems.toString())
 
         // Insert Attachment
         val itemId = getTodoItems[0].itemId
         val todoItemAttachment = TodoItemAttachment(itemId = itemId)
-        databaseInterface.insertAttachment(todoItemAttachment)
+        databaseInterfaceTest.insertAttachment(todoItemAttachment)
 
-        val getTodoAttachments = databaseInterface.getTodoItemAttachments(itemId)
+        val getTodoAttachments = databaseInterfaceTest.getTodoItemAttachments(itemId)
         assertEquals(getTodoAttachments.size, 1)
         Log.i("INSERTED", getTodoAttachments.toString())
 
         //Toggle Completion Status
-        var completionStatus = databaseInterface.getTodoItemDetails(itemId)?.itemComplete
+        var completionStatus = databaseInterfaceTest.getTodoItemDetails(itemId)?.itemComplete
         assertEquals(completionStatus, false)
 
-        databaseInterface.changeComplete(itemId)
-        completionStatus = databaseInterface.getTodoItemDetails(itemId)?.itemComplete
+        databaseInterfaceTest.changeComplete(itemId)
+        completionStatus = databaseInterfaceTest.getTodoItemDetails(itemId)?.itemComplete
         assertEquals(completionStatus, true)
 
-        databaseInterface.changeComplete(itemId)
-        completionStatus = databaseInterface.getTodoItemDetails(itemId)?.itemComplete
+        databaseInterfaceTest.changeComplete(itemId)
+        completionStatus = databaseInterfaceTest.getTodoItemDetails(itemId)?.itemComplete
         assertEquals(completionStatus, false)
     }
 }

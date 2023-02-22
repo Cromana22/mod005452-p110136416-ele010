@@ -4,6 +4,6 @@ import androidx.lifecycle.LiveData
 import com.example.flexitodo.database.DatabaseInterface
 import com.example.flexitodo.database.TodoList
 
-class AddTodoRepository(private val databaseInterface: DatabaseInterface) {
+class DatabaseRepository(private val databaseInterface: DatabaseInterface) {
     val allTodoLists: LiveData<List<TodoList>> = databaseInterface.getTodoLists()
 }

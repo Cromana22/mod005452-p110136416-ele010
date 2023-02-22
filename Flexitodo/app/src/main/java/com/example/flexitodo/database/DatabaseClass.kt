@@ -10,6 +10,8 @@ import androidx.room.RoomDatabase
 abstract class DatabaseClass : RoomDatabase() {
 
     abstract val databaseInterface: DatabaseInterface
+    abstract val databaseInterfaceTest: DatabaseInterfaceTest
+
 
     companion object {
 
@@ -24,12 +26,19 @@ abstract class DatabaseClass : RoomDatabase() {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
                         DatabaseClass::class.java,
-                        "sleep_history_database"
+                        "flexitodo-db"
                     )
                         .fallbackToDestructiveMigration()
                         .build()
+
+                    //insert default list
+                    val todoList = TodoList(listName = "My Todos")
+                    val databaseInterface = instance.databaseInterface
+                    databaseInterface.insertList(todoList)
+
                     INSTANCE = instance
                 }
+
                 return instance
             }
         }

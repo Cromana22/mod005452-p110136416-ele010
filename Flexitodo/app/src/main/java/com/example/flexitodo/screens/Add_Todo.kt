@@ -10,20 +10,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.flexitodo.*
+import com.example.flexitodo.database.TodoList
 import com.example.flexitodo.navigation.Screens
 import java.time.LocalDateTime
 
 @ExperimentalMaterial3Api
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddTodo(navController: NavController) {
-    val viewModel: AddTodoViewModel = viewModel()
-
+fun AddTodo(navController: NavController, viewModel: DatabaseViewModel) {
     Scaffold(
         topBar = { TopAppBarAddNew(navController) },
         content = { paddingValues ->
@@ -51,9 +50,10 @@ fun TopAppBarAddNew(navController: NavController) {
 
 @ExperimentalMaterial3Api
 @Composable
-fun ContentAddNew(viewModel: AddTodoViewModel) {
-    val todoListsState = viewModel.allTodoLists.observeAsState()
-    val numTodoLists = todoListsState.value?.size
+fun ContentAddNew(viewModel: DatabaseViewModel) {
+
+    val todoListsState: State<List<TodoList>> = viewModel.allTodoLists().observeAsState(initial = emptyList())
+    val numTodoLists = todoListsState.value.size
 
     Row {
         LazyColumn {
@@ -61,11 +61,9 @@ fun ContentAddNew(viewModel: AddTodoViewModel) {
                 Text("This is some content.")
             }
 
-            if (numTodoLists != null) {
-                items(numTodoLists) { todoListsState.value!!.forEach {
-                    todoList -> Text("${todoList.listName}")
-                } }
-            }
+            items(numTodoLists) { todoListsState.value.forEach {
+                todoList -> Text(todoList.listName)
+            } }
 
             item{
                 Button(
