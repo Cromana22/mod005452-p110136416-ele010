@@ -36,8 +36,12 @@ interface DatabaseInterface {
     fun getTodoLists(): LiveData<List<TodoList>>
 
     // Get all items in a list for main page, today first.
-    @Query("SELECT * from todo_item WHERE list_id = :key ORDER BY item_date ASC")
-    fun getTodoItems(key: Long): LiveData<List<TodoItem>>
+    @Query("SELECT * from todo_item WHERE list_id = :key AND item_folder = :folder ORDER BY item_date ASC")
+    fun getTodoItems(key: Long, folder: String): LiveData<List<TodoItem>>
+
+    // Get all folders for a list to be used in getting items.
+    @Query("SELECT DISTINCT item_folder FROM todo_item WHERE list_id = :key ORDER BY item_folder ASC")
+    fun getTodoFolders(key: Long): LiveData<List<String>>
 
     // Get all details of a item for item display / edit page.
     @Query("SELECT * from todo_item WHERE itemId = :key")

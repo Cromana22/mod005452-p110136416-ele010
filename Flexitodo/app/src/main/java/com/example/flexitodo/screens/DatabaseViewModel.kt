@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.example.flexitodo.database.DatabaseClass
+import com.example.flexitodo.database.TodoItem
 import com.example.flexitodo.database.TodoList
 
 class DatabaseViewModel(application: Application) : AndroidViewModel(application) {
@@ -12,5 +13,13 @@ class DatabaseViewModel(application: Application) : AndroidViewModel(application
 
     fun allTodoLists(): LiveData<List<TodoList>> {
         return repository.allTodoLists
+    }
+
+    fun getTodoFolders(key: Long): LiveData<List<String>> {
+        return repository.getTodoFolders(key)
+    }
+
+    fun getTodoItems(key: Long, folder: String): LiveData<List<TodoItem>> {
+        return repository.getTodoItems(key, folder)
     }
 }

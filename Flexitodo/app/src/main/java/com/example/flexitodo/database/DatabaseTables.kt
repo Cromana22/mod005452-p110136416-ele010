@@ -32,7 +32,7 @@ data class TodoItem(
     var itemSummary: String = "Todo",
 
     @ColumnInfo(name = "item_folder" )
-    var itemFolder: String = "Today",
+    var itemFolder: String = "Sometime",
 
     @ColumnInfo(name = "item_date")
     var itemDate: Long = System.currentTimeMillis(),

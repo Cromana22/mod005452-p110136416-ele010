@@ -16,7 +16,7 @@ fun NavGraph (navController: NavHostController){
         navController = navController,
         startDestination = Screens.TodoList.route)
     {
-        composable(route = Screens.TodoList.route){ TodoList(navController) }
+        composable(route = Screens.TodoList.route){ TodoList(navController, viewModel()) }
         composable(route = Screens.AddNew.route){ AddTodo(navController, viewModel()) }
         composable(route = Screens.Settings.route){ Settings(navController) }
     }

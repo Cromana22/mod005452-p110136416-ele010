@@ -1,6 +1,7 @@
 package com.example.flexitodo.database
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -21,6 +22,7 @@ abstract class DatabaseClass : RoomDatabase() {
         fun getInstance(context: Context): DatabaseClass {
             synchronized(this) {
                 var instance = INSTANCE
+                Log.i("database", instance.toString())
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
@@ -35,6 +37,8 @@ abstract class DatabaseClass : RoomDatabase() {
                     val todoList = TodoList(listName = "My Todos")
                     val databaseInterface = instance.databaseInterface
                     databaseInterface.insertList(todoList)
+                    val todoItem = TodoItem(listId = 1L)
+                    databaseInterface.insertItem(todoItem)
 
                     INSTANCE = instance
                 }
