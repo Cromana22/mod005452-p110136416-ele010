@@ -26,7 +26,7 @@ fun TodoList(navController: NavController, viewModel: DatabaseViewModel) {
     Scaffold(
         topBar = { TopAppBarTodoList(navController, viewModel) },
         content = { paddingValues ->
-            ContentTodoList(viewModel, paddingValues)
+            ContentTodoList(viewModel, paddingValues, navController)
         }
     )
 }
@@ -57,11 +57,18 @@ fun TopAppBarTodoList(navController: NavController, viewModel: DatabaseViewModel
 
 @ExperimentalMaterial3Api
 @Composable
-fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues) {
+fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, navController: NavController) {
    val folders: State<List<String>> = viewModel.getTodoFolders(1L).observeAsState(initial = emptyList())
 
    LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-       if (folders.value.isEmpty()){ items(1){Text("Test") }}
+       if (folders.value.isEmpty()){
+           items(1){
+               Button(onClick = { navController.navigate(Screens.AddNew.route) }) {
+                   Text("Click to add your first todo!")
+               }
+           }
+       }
+
        else {
            items(count = folders.value.size){
                folders.value.forEach { folder ->

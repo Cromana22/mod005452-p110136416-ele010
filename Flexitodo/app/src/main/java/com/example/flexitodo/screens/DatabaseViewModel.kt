@@ -22,4 +22,8 @@ class DatabaseViewModel(application: Application) : AndroidViewModel(application
     fun getTodoItems(key: Long, folder: String): LiveData<List<TodoItem>> {
         return repository.getTodoItems(key, folder)
     }
+
+    fun getTodoItemDetails(key: Long): LiveData<TodoItem?> {
+        return databaseInterface.getTodoItemDetails(key)
+    }
 }
