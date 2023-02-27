@@ -77,31 +77,26 @@ fun TopAppBarAddNew(navController: NavController) {
 @Composable
 fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
     val todoItem: State<TodoItem?>
-    var summaryDefault = ""
-    var folderDefault = "Today"
-    var datePickedDefault = ""
-    var notesDefault  = ""
+    val expanded = remember { mutableStateOf(false) }
+    val datePickerShown = remember { mutableStateOf(false) }
+    val summary = rememberSaveable { mutableStateOf("") }
+    val folder = rememberSaveable { mutableStateOf("Today") }
+    val datePicked = rememberSaveable { mutableStateOf("") }
+    val notes = rememberSaveable { mutableStateOf("") }
 
     if (todoId !== null) {
         todoItem = viewModel.getTodoItemDetails(todoId).observeAsState(initial = null)
-        if (todoItem.value !== null) {
-            summaryDefault = todoItem.value!!.itemSummary
-            folderDefault = todoItem.value!!.itemFolder
-            datePickedDefault = LongToStringDate(todoItem.value!!.itemDate)
-            notesDefault = todoItem.value!!.itemNotes
+
+        if (todoItem.value is TodoItem) {
+            summary.value = todoItem.value!!.itemSummary
+            folder.value = todoItem.value!!.itemFolder
+            datePicked.value = LongToStringDate(todoItem.value!!.itemDate)
+            notes.value = todoItem.value!!.itemNotes
         }
     }
 
-    val expanded = remember { mutableStateOf(false) }
-    val datePickerShown = remember { mutableStateOf(false) }
-
-    val summary = rememberSaveable { mutableStateOf(summaryDefault) }
-    val folder = rememberSaveable { mutableStateOf(folderDefault) }
-    var datePicked = remember { mutableStateOf(datePickedDefault) }
-    var notes = rememberSaveable { mutableStateOf(notesDefault) }
-
     Row {
-        LazyColumn(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(15.dp),) {
+        LazyColumn(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
             item(1){
                 OutlinedTextField(
                     value = summary.value,
