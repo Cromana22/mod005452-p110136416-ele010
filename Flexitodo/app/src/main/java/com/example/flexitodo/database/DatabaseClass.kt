@@ -1,7 +1,6 @@
 package com.example.flexitodo.database
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -22,23 +21,23 @@ abstract class DatabaseClass : RoomDatabase() {
         fun getInstance(context: Context): DatabaseClass {
             synchronized(this) {
                 var instance = INSTANCE
-                Log.i("database", instance.toString())
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
                         DatabaseClass::class.java,
-                        "flexitodo-db"
+                        "sqlite.db"
                     )
-                        .fallbackToDestructiveMigration()
+                        .createFromAsset("sqlite.db")
                         .build()
 
-                    //insert default list
-                    val todoList = TodoList(listName = "My Todos")
-                    val databaseInterface = instance.databaseInterface
-                    databaseInterface.insertList(todoList)
-                    val todoItem = TodoItem(listId = 1L)
-                    databaseInterface.insertItem(todoItem)
+//                    val todoList = TodoList(listName = "My Todos")
+//                    val databaseInterface = instance.databaseInterface
+//                    databaseInterface.insertList(todoList)
+//                    val todoItem1 = TodoItem(listId = 1L, itemSummary = "Example Todo 1")
+//                    val todoItem2 = TodoItem(listId = 1L, itemSummary = "Example Todo 2")
+//                    databaseInterface.insertItem(todoItem1)
+//                    databaseInterface.insertItem(todoItem2)
 
                     INSTANCE = instance
                 }

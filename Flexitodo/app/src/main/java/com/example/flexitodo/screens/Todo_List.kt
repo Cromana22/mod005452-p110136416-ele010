@@ -68,7 +68,7 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues) 
                    val items: State<List<TodoItem>> = viewModel.getTodoItems(key = 1L, folder = folder)
                        .observeAsState(initial = emptyList())
 
-                   Row{ CollapsibleList(folder, items.value) }
+                   Row{ CollapsibleList(folder, items.value, true) }
                }
            }
        }

@@ -6,8 +6,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,64 +19,59 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexitodo.database.TodoItem
 
 @Composable
-fun CollapsibleList(folder: String, items: List<TodoItem>) {
-    val expanded = remember { mutableStateOf(true) }
+fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean) {
+    val expanded = remember { mutableStateOf(isExpanded) }
+    val arrow: ImageVector = if (expanded.value) {
+        Icons.Filled.KeyboardArrowUp
+    }
+    else {
+        Icons.Filled.KeyboardArrowDown
+    }
 
     Box(Modifier.padding(10.dp)) {
         Column(Modifier.border(BorderStroke(2.dp, SolidColor(MaterialTheme.colorScheme.primary)))) {
-            HeaderView(title = folder, onClickItem = { expanded != expanded })
-            ExpandableView(todoItems = items, isExpanded = expanded.value)
+            Box(
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.primary)
+                    .clickable(onClick = {
+                        expanded.value = !expanded.value
+                   })
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 17.sp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Icon(
+                    imageVector = arrow,
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            ExpandableView(todoItems = todoItems, isExpanded = expanded.value)
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun CollapsibleListViewPreview() {
+fun CollapsibleListPreview() {
     val todoItem1 = TodoItem(listId = 1L, itemSummary = "Todo1")
     val todoItem2 = TodoItem(listId = 1L, itemSummary = "Todo2")
     val todoItem3 = TodoItem(listId = 1L, itemSummary = "Todo3")
     val items = listOf(todoItem1, todoItem2, todoItem3)
-
-    CollapsibleList(
-        folder = "Sometime",
-        items = items
-    )
-}
-
-@Composable
-fun HeaderView(title: String, onClickItem: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.primary)
-            .clickable(
-                indication = null, // Removes the ripple effect on tap
-                interactionSource = remember { MutableInteractionSource() }, // Removes the ripple effect on tap
-                onClick = onClickItem
-            )
-            .padding(8.dp)
-    ) {
-        Text(
-            text = title,
-            fontSize = 17.sp,
-            color = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HeaderViewPreview() {
-    HeaderView("Sometime") {}
+    CollapsibleList("Sometime", todoItems = items, true)
 }
 
 @Composable
