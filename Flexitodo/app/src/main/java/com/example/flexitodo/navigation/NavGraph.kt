@@ -21,7 +21,7 @@ fun NavGraph (navController: NavHostController){
         composable(
             route = "Add_Todo?todoId={todoId}",
             arguments = listOf(navArgument("todoId") {
-                defaultValue = null;
+                defaultValue = null
                 nullable = true
             })) {
             backStackEntry ->
@@ -29,7 +29,7 @@ fun NavGraph (navController: NavHostController){
             var todoId: Long? = null
             if (temp != null) { todoId = temp.toLong() }
 
-            AddTodo(navController, viewModel(), todoId)
+            AddEditTodo(navController, viewModel(), todoId, viewModel())
         }
         composable(route = "Settings"){ Settings(navController) }
     }

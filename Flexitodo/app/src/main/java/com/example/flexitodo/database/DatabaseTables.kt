@@ -35,10 +35,10 @@ data class TodoItem(
     var itemFolder: String = "Sometime",
 
     @ColumnInfo(name = "item_date")
-    var itemDate: Long = System.currentTimeMillis(),
+    var itemDate: Long? = System.currentTimeMillis(),
 
     @ColumnInfo(name = "item_notes")
-    var itemNotes: String = "",
+    var itemNotes: String? = "",
 
     @ColumnInfo(name = "item_complete")
     var itemComplete: Boolean = false,

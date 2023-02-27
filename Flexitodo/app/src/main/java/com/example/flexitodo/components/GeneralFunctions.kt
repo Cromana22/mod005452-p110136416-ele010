@@ -6,8 +6,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun LongToStringDate(long: Long): String {
-    return SimpleDateFormat("dd-MM-yyyy").format(Date(long))
+fun LongToStringDate(long: Long?): String {
+    return if (long is Long) {
+        SimpleDateFormat("dd-MM-yyyy").format(Date(long))
+    }
+    else {
+        ""
+    }
 }
 
 fun DateFormatUK(localDate: LocalDate): String {

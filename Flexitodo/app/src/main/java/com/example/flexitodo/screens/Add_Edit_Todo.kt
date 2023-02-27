@@ -8,13 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -23,21 +18,24 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.R
-import com.example.flexitodo.components.LongToStringDate
 import com.example.flexitodo.components.DateFormatUK
+import com.example.flexitodo.components.LongToStringDate
+import com.example.flexitodo.components.StringToLongDate
 import com.example.flexitodo.database.TodoItem
 import com.marosseleng.compose.material3.*
+import kotlinx.coroutines.launch
 import java.util.*
+
 
 @ExperimentalMaterial3Api
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: Long?) {
+fun AddEditTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
     Scaffold(
-        topBar = { TopAppBarAddNew(navController, todoId) },
+        topBar = { TopAppBarAddNew(navController, todoId, newTodoViewModel, viewModel) },
         content = { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
-                ContentAddNew(viewModel, todoId)
+                ContentAddNew(viewModel, todoId, newTodoViewModel)
             }
         }
     )
@@ -45,7 +43,9 @@ fun AddTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: 
 
 @ExperimentalMaterial3Api
 @Composable
-fun TopAppBarAddNew(navController: NavController, todoId: Long?) {
+fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewModel: NewTodoViewModel, viewModel: DatabaseViewModel) {
+    val coroutineScope = rememberCoroutineScope()
+
     TopAppBar(
         title = {
             if (todoId != null) {
@@ -62,7 +62,29 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?) {
             }
         },
         actions = {
-            Button(onClick = { navController.navigate("Todo_List") }) {
+
+            Button(onClick = {
+                if (todoId is Long) {
+                    val item = TodoItem(
+                        itemId = todoId,
+                        listId = 1L,
+                        itemSummary = newTodoViewModel.summary.value.toString(),
+                        itemFolder = newTodoViewModel.folder.value.toString(),
+                        itemDate = StringToLongDate(newTodoViewModel.datePicked.value.toString()),
+                        itemNotes = newTodoViewModel.notes.value)
+                    coroutineScope.launch { viewModel.updateItem(item) }
+
+                } else {
+                    val item = TodoItem(
+                        listId = 1L,
+                        itemSummary = newTodoViewModel.summary.value.toString(),
+                        itemFolder = newTodoViewModel.folder.value.toString(),
+                        itemDate = StringToLongDate(newTodoViewModel.datePicked.value.toString()),
+                        itemNotes = newTodoViewModel.notes.value)
+                    coroutineScope.launch { viewModel.insertItem(item) }
+                }
+                navController.navigate("Todo_List")
+            }){
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_save_24),
                     contentDescription = null,
@@ -77,23 +99,24 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?) {
 @OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalMaterial3Api
 @Composable
-fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
+fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
     val todoItem: State<TodoItem?>
     val expanded = remember { mutableStateOf(false) }
     val datePickerShown = remember { mutableStateOf(false) }
-    val summary = rememberSaveable { mutableStateOf("") }
-    val folder = rememberSaveable { mutableStateOf("Today") }
-    val datePicked = rememberSaveable { mutableStateOf("") }
-    val notes = rememberSaveable { mutableStateOf("") }
+
+    val summary = newTodoViewModel.summary.observeAsState(initial = null)
+    val folder = newTodoViewModel.folder.observeAsState(initial = "Today")
+    val datePicked = newTodoViewModel.datePicked.observeAsState(initial = null)
+    val notes = newTodoViewModel.notes.observeAsState(initial = null)
 
     if (todoId !== null) {
         todoItem = viewModel.getTodoItemDetails(todoId).observeAsState(initial = null)
 
         if (todoItem.value is TodoItem) {
-            summary.value = todoItem.value!!.itemSummary
-            folder.value = todoItem.value!!.itemFolder
-            datePicked.value = LongToStringDate(todoItem.value!!.itemDate)
-            notes.value = todoItem.value!!.itemNotes
+            newTodoViewModel.summary.value = todoItem.value!!.itemSummary
+            newTodoViewModel.folder.value = todoItem.value!!.itemFolder
+            newTodoViewModel.datePicked.value = LongToStringDate(todoItem.value!!.itemDate)
+            newTodoViewModel.notes.value = todoItem.value!!.itemNotes
         }
     }
 
@@ -101,8 +124,8 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
         LazyColumn(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
             item(1){
                 OutlinedTextField(
-                    value = summary.value,
-                    onValueChange = { summary.value = it },
+                    value = summary.value.toString(),
+                    onValueChange = { newTodoViewModel.summary.value = it },
                     label = { Text("Summary") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -121,18 +144,18 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
                             .fillMaxWidth()
                     )
                     ExposedDropdownMenu(expanded = expanded.value, onDismissRequest = { expanded.value = false } ) {
-                        DropdownMenuItem(text = { Text("Today") }, onClick = { folder.value = "Today" } )
-                        DropdownMenuItem(text = { Text("Tomorrow") }, onClick = { folder.value = "Tomorrow" } )
-                        DropdownMenuItem(text = { Text("This Week") }, onClick = { folder.value = "This Week" } )
-                        DropdownMenuItem(text = { Text("This Month") }, onClick = { folder.value = "This Month" } )
-                        DropdownMenuItem(text = { Text("Sometime") }, onClick = { folder.value = "Sometime" } )
+                        DropdownMenuItem(text = { Text("Today") }, onClick = { newTodoViewModel.folder.value = "Today" } )
+                        DropdownMenuItem(text = { Text("Tomorrow") }, onClick = { newTodoViewModel.folder.value = "Tomorrow" } )
+                        DropdownMenuItem(text = { Text("This Week") }, onClick = { newTodoViewModel.folder.value = "This Week" } )
+                        DropdownMenuItem(text = { Text("This Month") }, onClick = { newTodoViewModel.folder.value = "This Month" } )
+                        DropdownMenuItem(text = { Text("Sometime") }, onClick = { newTodoViewModel.folder.value = "Sometime" } )
                     }
                 }
             }  //Folder Field
             item(3){
                  Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp) ) {
                      TextField(
-                         value = datePicked.value,
+                         value = datePicked.value.toString(),
                          onValueChange = { },
                          enabled = false,
                          readOnly = true,
@@ -144,7 +167,7 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
                              .weight(1f)
                      )
                      Button(
-                         onClick = { datePicked.value = "" },
+                         onClick = { newTodoViewModel.datePicked.value = "" },
                          shape = CircleShape,
                          modifier = Modifier.size(50.dp),
                          contentPadding = PaddingValues(0.dp)
@@ -159,7 +182,7 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
                          com.marosseleng.compose.material3.datetimepickers.date.ui.dialog.DatePickerDialog(
                              onDismissRequest = { datePickerShown.value = false },
                              onDateChange = { localDate ->
-                                 datePicked.value = DateFormatUK(localDate)
+                                 newTodoViewModel.datePicked.value = DateFormatUK(localDate)
                                  datePickerShown.value = false
                             },
                              title = { Text("Select a due date:")},
@@ -171,8 +194,8 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
             }  //Date Field
             item(4){
                 OutlinedTextField(
-                    value = notes.value,
-                    onValueChange = { notes.value = it },
+                    value = notes.value.toString(),
+                    onValueChange = { newTodoViewModel.notes.value = it },
                     label = { Text("Notes") },
                     modifier = Modifier
                         .fillMaxWidth()

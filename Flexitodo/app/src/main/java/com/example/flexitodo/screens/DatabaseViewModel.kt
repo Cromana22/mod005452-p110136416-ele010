@@ -26,4 +26,12 @@ class DatabaseViewModel(application: Application) : AndroidViewModel(application
     fun getTodoItemDetails(key: Long): LiveData<TodoItem?> {
         return databaseInterface.getTodoItemDetails(key)
     }
+
+    suspend fun insertItem(item: TodoItem){
+        databaseInterface.insertItem(item)
+    }
+
+    suspend fun updateItem(item: TodoItem){
+        databaseInterface.update(item)
+    }
 }

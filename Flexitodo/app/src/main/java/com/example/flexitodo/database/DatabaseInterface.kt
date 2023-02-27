@@ -15,14 +15,14 @@ interface DatabaseInterface {
     @Insert
     fun insertList(list: TodoList)
     @Insert
-    fun insertItem(item: TodoItem)
+    suspend fun insertItem(item: TodoItem)
     @Insert
     fun insertAttachment(attachment: TodoItemAttachment)
 
     @Update
     fun update(list: TodoList)
     @Update
-    fun update(item: TodoItem)
+    suspend fun update(item: TodoItem)
 
     @Delete
     fun delete(list: TodoList)
