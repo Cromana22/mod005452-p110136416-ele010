@@ -8,16 +8,29 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.flexitodo.screens.*
 
 @Composable
 fun NavGraph (navController: NavHostController){
     NavHost(
         navController = navController,
-        startDestination = Screens.TodoList.route)
+        startDestination = "Todo_List")
     {
-        composable(route = Screens.TodoList.route){ TodoList(navController, viewModel()) }
-        composable(route = Screens.AddNew.route){ AddTodo(navController, viewModel(), 1) }
-        composable(route = Screens.Settings.route){ Settings(navController) }
+        composable(route = "Todo_List"){ TodoList(navController, viewModel()) }
+        composable(
+            route = "Add_Todo?todoId={todoId}",
+            arguments = listOf(navArgument("todoId") {
+                defaultValue = null;
+                nullable = true
+            })) {
+            backStackEntry ->
+            val temp = backStackEntry.arguments?.getString("todoId")
+            var todoId: Long? = null
+            if (temp != null) { todoId = temp.toLong() }
+
+            AddTodo(navController, viewModel(), todoId)
+        }
+        composable(route = "Settings"){ Settings(navController) }
     }
 }

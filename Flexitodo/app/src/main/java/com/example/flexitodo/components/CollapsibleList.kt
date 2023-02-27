@@ -20,13 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.flexitodo.database.TodoItem
 
 @Composable
-fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean) {
+fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController) {
     val expanded = remember { mutableStateOf(isExpanded) }
     val arrow: ImageVector = if (expanded.value) {
         Icons.Filled.KeyboardArrowUp
@@ -59,23 +59,13 @@ fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolea
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            ExpandableView(todoItems = todoItems, isExpanded = expanded.value)
+            ExpandableView(todoItems = todoItems, isExpanded = expanded.value, navController = navController)
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun CollapsibleListPreview() {
-    val todoItem1 = TodoItem(listId = 1L, itemSummary = "Todo1")
-    val todoItem2 = TodoItem(listId = 1L, itemSummary = "Todo2")
-    val todoItem3 = TodoItem(listId = 1L, itemSummary = "Todo3")
-    val items = listOf(todoItem1, todoItem2, todoItem3)
-    CollapsibleList("Sometime", todoItems = items, true)
-}
-
-@Composable
-fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean) {
+fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController) {
     // Opening Animation
     val expandTransition = remember {
         expandVertically(
@@ -106,27 +96,22 @@ fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean) {
                 .background(MaterialTheme.colorScheme.background)
                 .padding(15.dp)
         ) {
-            Column{
+            Column(verticalArrangement = Arrangement.SpaceEvenly){
                 todoItems.forEach { item ->
                     Text(text = item.itemSummary,
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                            .clickable(onClick = {
+                                val todoId = item.itemId
+                                navController.navigate("Add_Todo?todoId=$todoId")
+                            }
+                        )
                     )
                 }
             }
         }
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun ExpandableViewPreview() {
-    val todoItem1 = TodoItem(listId = 1L, itemSummary = "Todo1")
-    val todoItem2 = TodoItem(listId = 1L, itemSummary = "Todo2")
-    val todoItem3 = TodoItem(listId = 1L, itemSummary = "Todo3")
-    val items = listOf(todoItem1, todoItem2, todoItem3)
-    ExpandableView(items, true)
 }

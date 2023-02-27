@@ -1,7 +1,6 @@
 package com.example.flexitodo.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,11 +25,8 @@ import com.example.flexitodo.*
 import com.example.flexitodo.R
 import com.example.flexitodo.components.LongToStringDate
 import com.example.flexitodo.components.DateFormatUK
-import com.example.flexitodo.components.StringToLongDate
 import com.example.flexitodo.database.TodoItem
-import com.example.flexitodo.navigation.Screens
 import com.marosseleng.compose.material3.*
-import java.text.DateFormat
 import java.util.*
 
 @ExperimentalMaterial3Api
@@ -38,7 +34,7 @@ import java.util.*
 @Composable
 fun AddTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: Long?) {
     Scaffold(
-        topBar = { TopAppBarAddNew(navController) },
+        topBar = { TopAppBarAddNew(navController, todoId) },
         content = { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
                 ContentAddNew(viewModel, todoId)
@@ -49,18 +45,24 @@ fun AddTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: 
 
 @ExperimentalMaterial3Api
 @Composable
-fun TopAppBarAddNew(navController: NavController) {
+fun TopAppBarAddNew(navController: NavController, todoId: Long?) {
     TopAppBar(
-        title = { Text("Add New Todo") },
+        title = {
+            if (todoId != null) {
+                Text("Edit Todo")
+            } else {
+                Text("Add Todo")
+            }
+        },
         navigationIcon = {
-            IconButton(onClick = { navController.navigate(Screens.TodoList.route) {
-                popUpTo(Screens.TodoList.route)
+            IconButton(onClick = { navController.navigate("Todo_List") {
+                popUpTo("Todo_List")
             } }) {
                 Icon(Icons.Filled.ArrowBack, null)
             }
         },
         actions = {
-            Button(onClick = { navController.navigate(Screens.TodoList.route) }) {
+            Button(onClick = { navController.navigate("Todo_List") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_save_24),
                     contentDescription = null,
@@ -137,7 +139,9 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
                          label = { Text(text = "Due Date") },
                          trailingIcon = { Icon(imageVector = Icons.Default.DateRange, contentDescription = null) },
                          colors = ExposedDropdownMenuDefaults.textFieldColors(),
-                         modifier = Modifier.clickable( onClick = {datePickerShown.value = true} ).weight(1f)
+                         modifier = Modifier
+                             .clickable(onClick = { datePickerShown.value = true })
+                             .weight(1f)
                      )
                      Button(
                          onClick = { datePicked.value = "" },
@@ -170,7 +174,9 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?) {
                     value = notes.value,
                     onValueChange = { notes.value = it },
                     label = { Text("Notes") },
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 )
             }  //Notes Field
         }

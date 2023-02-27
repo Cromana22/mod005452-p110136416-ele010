@@ -11,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.flexitodo.*
-import com.example.flexitodo.navigation.Screens
 
 @ExperimentalMaterial3Api
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -33,8 +32,8 @@ fun TopAppBarSettings(navController: NavController) {
     TopAppBar(
         title = { Text("Settings") },
         navigationIcon = {
-            IconButton(onClick = { navController.navigate(Screens.TodoList.route) {
-                popUpTo(Screens.TodoList.route)
+            IconButton(onClick = { navController.navigate("Todo_List") {
+                popUpTo("Todo_List")
             } }) {
                 Icon(Icons.Filled.ArrowBack, null)
             }

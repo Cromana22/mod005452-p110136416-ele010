@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,7 +17,6 @@ import com.example.flexitodo.*
 import com.example.flexitodo.components.CollapsibleList
 import com.example.flexitodo.database.TodoItem
 import com.example.flexitodo.database.TodoList
-import com.example.flexitodo.navigation.Screens
 
 @ExperimentalMaterial3Api
 @Composable
@@ -42,13 +40,10 @@ fun TopAppBarTodoList(navController: NavController, viewModel: DatabaseViewModel
             else { Text(todoListsState.value[0].listName) }
         },
         actions = {
-            IconButton(onClick = {/* Do Something*/ }) {
-                Icon(Icons.Filled.Notifications, null)
-            }
-            IconButton(onClick = { navController.navigate(Screens.Settings.route) }) {
+            IconButton(onClick = { navController.navigate("Settings") }) {
                 Icon(Icons.Filled.Settings, null)
             }
-            IconButton(onClick = { navController.navigate(Screens.AddNew.route) }) {
+            IconButton(onClick = { navController.navigate("Add_Todo") }) {
                 Icon(Icons.Filled.Add, null)
             }
         }
@@ -63,7 +58,7 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, 
    LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
        if (folders.value.isEmpty()){
            items(1){
-               Button(onClick = { navController.navigate(Screens.AddNew.route) }) {
+               Button(onClick = { navController.navigate("Add_Todo") }) {
                    Text("Click to add your first todo!")
                }
            }
@@ -75,7 +70,7 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, 
                    val items: State<List<TodoItem>> = viewModel.getTodoItems(key = 1L, folder = folder)
                        .observeAsState(initial = emptyList())
 
-                   Row{ CollapsibleList(folder, items.value, true) }
+                   Row{ CollapsibleList(folder, items.value, true, navController) }
                }
            }
        }
