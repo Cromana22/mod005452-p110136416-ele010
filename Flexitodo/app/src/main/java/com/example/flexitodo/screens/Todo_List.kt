@@ -57,7 +57,7 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, 
 
    LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
        if (folders.value.isEmpty()){
-           items(1){
+           item(1){
                Button(onClick = { navController.navigate("Add_Todo") }) {
                    Text("Click to add your first todo!")
                }
@@ -65,7 +65,7 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, 
        }
 
        else {
-           items(count = folders.value.size){
+           item(2){
                folders.value.forEach { folder ->
                    val items: State<List<TodoItem>> = viewModel.getTodoItems(key = 1L, folder = folder)
                        .observeAsState(initial = emptyList())
