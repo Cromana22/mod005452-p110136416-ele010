@@ -53,26 +53,35 @@ fun TopAppBarTodoList(navController: NavController, viewModel: DatabaseViewModel
 @ExperimentalMaterial3Api
 @Composable
 fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, navController: NavController) {
-   val folders: State<List<String>> = viewModel.getTodoFolders(1L).observeAsState(initial = emptyList())
+    val folders: State<List<String>> = viewModel.getTodoFolders(1L).observeAsState(initial = emptyList())
+    val folderOrder = listOf("Today",  "Tomorrow", "This Week", "This Month", "Sometime")
 
-   LazyColumn(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-       if (folders.value.isEmpty()){
+    LazyColumn(modifier = Modifier
+        .padding(paddingValues)
+        .fillMaxSize()) {
+        if (folders.value.isEmpty()){
            item(1){
-               Button(onClick = { navController.navigate("Add_Todo") }) {
-                   Text("Click to add your first todo!")
+               Box(modifier = Modifier.fillMaxSize()){
+                   Button(onClick = { navController.navigate("Add_Todo") }) {
+                       Text("Click to add your first todo!")
+                   }
                }
            }
        }
 
-       else {
-           item(2){
-               folders.value.forEach { folder ->
-                   val items: State<List<TodoItem>> = viewModel.getTodoItems(key = 1L, folder = folder)
-                       .observeAsState(initial = emptyList())
+        else {
+            item(2){
+                for (folderName in folderOrder) {
+                    folders.value.forEach { folder ->
+                        if (folder == folderName){
+                            val items: State<List<TodoItem>> = viewModel.getTodoItems(key = 1L, folder = folder)
+                                .observeAsState(initial = emptyList())
 
-                   Row{ CollapsibleList(folder, items.value, true, navController) }
-               }
-           }
-       }
-   }
+                            Row { CollapsibleList(folder, items.value, true, navController) }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
