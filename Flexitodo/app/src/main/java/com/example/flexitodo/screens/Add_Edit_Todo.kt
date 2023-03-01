@@ -100,6 +100,7 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
                 Text("  SAVE")
             }
             if (todoId is Long) {
+                Box(modifier = Modifier.width(5.dp)) //spacer between buttons.
                 Button(onClick = {
                     newTodoViewModel.openDialog.value = true
                 })

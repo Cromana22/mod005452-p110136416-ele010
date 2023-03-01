@@ -10,23 +10,31 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.flexitodo.R
 import com.example.flexitodo.database.TodoItem
+import com.example.flexitodo.screens.DatabaseViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController) {
+fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController, viewModel: DatabaseViewModel) {
     val expanded = remember { mutableStateOf(isExpanded) }
     val arrow: ImageVector = if (expanded.value) {
         Icons.Filled.KeyboardArrowUp
@@ -42,7 +50,7 @@ fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolea
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable(onClick = {
                         expanded.value = !expanded.value
-                   })
+                    })
                     .padding(8.dp)
             ) {
                 Text(
@@ -59,13 +67,15 @@ fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolea
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            ExpandableView(todoItems = todoItems, isExpanded = expanded.value, navController = navController)
+            ExpandableView(todoItems = todoItems, isExpanded = expanded.value, navController = navController, viewModel = viewModel)
         }
     }
 }
 
 @Composable
-fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController) {
+fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController, viewModel: DatabaseViewModel) {
+    val coroutineScope = rememberCoroutineScope()
+
     // Opening Animation
     val expandTransition = remember {
         expandVertically(
@@ -96,20 +106,82 @@ fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean, navController
                 .background(MaterialTheme.colorScheme.background)
                 .padding(15.dp)
         ) {
-            Column(verticalArrangement = Arrangement.SpaceEvenly){
-                todoItems.forEach { item ->
-                    Text(text = item.itemSummary,
-                        fontSize = 16.sp,
+            Column {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Summary",
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onBackground,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.fillMaxWidth(0.5f)
+                    )
+
+                    Text(
+                        text = "Due",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.fillMaxWidth(1f)
+                    )
+                }
+                todoItems.forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 5.dp)
                             .clickable(onClick = {
                                 val todoId = item.itemId
-                                navController.navigate("Add_Todo?todoId=$todoId")
-                            }
+                                navController.navigate("Add_Todo?todoId=$todoId" )
+                            })
+                    ) {
+                        Text(
+                            text = item.itemSummary,
+                            fontSize = 16.sp,
+                            textDecoration = if (item.itemComplete) TextDecoration.LineThrough else TextDecoration.None,
+                            fontWeight = if (item.itemDate is Long && item.itemDate!! <= System.currentTimeMillis()) FontWeight.Bold else FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.fillMaxWidth(0.5f)
                         )
-                    )
+
+                        Text(
+                            text = longToStringDate(item.itemDate),
+                            fontSize = 16.sp,
+                            textDecoration = if (item.itemComplete) TextDecoration.LineThrough else TextDecoration.None,
+                            fontWeight = if (item.itemDate is Long && item.itemDate!! <= System.currentTimeMillis()) FontWeight.Bold else FontWeight.Normal,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.fillMaxWidth(0.5f)
+                        )
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .padding(0.dp)
+                        ){
+                            if (item.itemNotes != "" && item.itemNotes != null) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_note_24),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .defaultMinSize(28.dp, 28.dp)
+                                )
+                            }
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ){
+                            Checkbox(
+                                checked = item.itemComplete,
+                                onCheckedChange = {
+                                    coroutineScope.launch { viewModel.changeComplete(item.itemId) }
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
