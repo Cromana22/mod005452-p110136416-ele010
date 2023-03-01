@@ -31,9 +31,15 @@ abstract class DatabaseClass : RoomDatabase() {
                         .fallbackToDestructiveMigration()
                         .build()
 
-//                    val todoList = TodoList(listName = "My Todos")
-//                    val databaseInterface = instance.databaseInterfaceTest
-//                    databaseInterface.insertList(todoList)
+                    val databaseInterface1 = instance.databaseInterface
+                    val newDb = databaseInterface1.getTodoLists()
+                    val newDbCount = newDb.value?.size
+
+                    if (newDbCount == null || newDbCount > 0){
+                        val todoList = TodoList(listName = "My Todos")
+                        val databaseInterface2 = instance.databaseInterfaceTest
+                        databaseInterface2.insertList(todoList)
+                    }
 
                     INSTANCE = instance
                 }
