@@ -34,14 +34,17 @@ import com.example.flexitodo.screens.DatabaseViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController, viewModel: DatabaseViewModel) {
+fun CollapsibleList(
+    title: String,
+    todoItems: List<TodoItem>,
+    isExpanded: Boolean,
+    navController: NavController,
+    viewModel: DatabaseViewModel,
+    toggleComplete: Boolean
+) {
     val expanded = remember { mutableStateOf(isExpanded) }
-    val arrow: ImageVector = if (expanded.value) {
-        Icons.Filled.KeyboardArrowUp
-    }
-    else {
-        Icons.Filled.KeyboardArrowDown
-    }
+    val arrow: ImageVector = if (expanded.value) { Icons.Filled.KeyboardArrowUp }
+    else { Icons.Filled.KeyboardArrowDown }
 
     Box(Modifier.padding(10.dp)) {
         Column(Modifier.border(BorderStroke(2.dp, SolidColor(MaterialTheme.colorScheme.primary)))) {
@@ -67,14 +70,26 @@ fun CollapsibleList(title: String, todoItems: List<TodoItem>, isExpanded: Boolea
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
-            ExpandableView(todoItems = todoItems, isExpanded = expanded.value, navController = navController, viewModel = viewModel)
+            ExpandableView(todoItems, expanded.value, navController, viewModel, toggleComplete)
         }
     }
 }
 
 @Composable
-fun ExpandableView(todoItems: List<TodoItem>, isExpanded: Boolean, navController: NavController, viewModel: DatabaseViewModel) {
+fun ExpandableView(todoItemsList: List<TodoItem>, isExpanded: Boolean, navController: NavController, viewModel: DatabaseViewModel, toggleComplete: Boolean) {
     val coroutineScope = rememberCoroutineScope()
+    var todoItems = todoItemsList
+
+    if (!toggleComplete){
+        var todoItemsTemp: List<TodoItem> = emptyList()
+
+        todoItems.forEach{item ->
+            if (!item.itemComplete)
+                todoItemsTemp = todoItemsTemp + item
+            }
+
+        todoItems = todoItemsTemp
+    }
 
     // Opening Animation
     val expandTransition = remember {

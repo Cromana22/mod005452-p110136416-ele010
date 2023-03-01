@@ -11,13 +11,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.flexitodo.screens.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavGraph (navController: NavHostController){
     NavHost(
         navController = navController,
         startDestination = "Todo_List")
     {
-        composable(route = "Todo_List"){ TodoList(navController, viewModel()) }
+        composable(route = "Todo_List"){ TodoList(navController, viewModel(), viewModel()) }
         composable(
             route = "Add_Todo?todoId={todoId}",
             arguments = listOf(navArgument("todoId") {
