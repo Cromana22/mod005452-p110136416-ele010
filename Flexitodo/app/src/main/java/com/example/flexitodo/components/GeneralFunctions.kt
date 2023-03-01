@@ -1,12 +1,16 @@
 package com.example.flexitodo.components
 
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun LongToStringDate(long: Long?): String {
+fun longToStringDate(long: Long?): String {
     return if (long is Long) {
         SimpleDateFormat("dd-MM-yyyy").format(Date(long))
     }
@@ -15,12 +19,12 @@ fun LongToStringDate(long: Long?): String {
     }
 }
 
-fun DateFormatUK(localDate: LocalDate): String {
+fun dateFormatUK(localDate: LocalDate): String {
     val formatters: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
     return localDate.format(formatters)
 }
 
-fun StringToLongDate(string: String): Long? {
+fun stringToLongDate(string: String): Long? {
 
     var longDate: Long? = null
 

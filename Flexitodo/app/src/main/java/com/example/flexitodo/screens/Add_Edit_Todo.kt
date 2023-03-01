@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.R
-import com.example.flexitodo.components.DateFormatUK
-import com.example.flexitodo.components.LongToStringDate
-import com.example.flexitodo.components.StringToLongDate
+import com.example.flexitodo.components.dateFormatUK
+import com.example.flexitodo.components.longToStringDate
+import com.example.flexitodo.components.stringToLongDate
 import com.example.flexitodo.database.TodoItem
 import com.marosseleng.compose.material3.*
 import kotlinx.coroutines.launch
@@ -31,10 +31,17 @@ import java.util.*
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddEditTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
+
+    val openD = newTodoViewModel.openDialog.observeAsState()
+
     Scaffold(
         topBar = { TopAppBarAddNew(navController, todoId, newTodoViewModel, viewModel) },
         content = { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
+                if (openD.value == true && todoId is Long){
+                    DeleteConfirm(newTodoViewModel, navController, todoId, viewModel)
+                }
+
                 ContentAddNew(viewModel, todoId, newTodoViewModel)
             }
         }
@@ -62,7 +69,6 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
             }
         },
         actions = {
-
             Button(onClick = {
                 if (todoId is Long) {
                     val item = TodoItem(
@@ -70,7 +76,7 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
                         listId = 1L,
                         itemSummary = newTodoViewModel.summary.value.toString(),
                         itemFolder = newTodoViewModel.folder.value.toString(),
-                        itemDate = StringToLongDate(newTodoViewModel.datePicked.value.toString()),
+                        itemDate = stringToLongDate(newTodoViewModel.datePicked.value.toString()),
                         itemNotes = newTodoViewModel.notes.value)
                     coroutineScope.launch { viewModel.updateItem(item) }
 
@@ -79,11 +85,13 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
                         listId = 1L,
                         itemSummary = newTodoViewModel.summary.value.toString(),
                         itemFolder = newTodoViewModel.folder.value.toString(),
-                        itemDate = StringToLongDate(newTodoViewModel.datePicked.value.toString()),
+                        itemDate = stringToLongDate(newTodoViewModel.datePicked.value.toString()),
                         itemNotes = newTodoViewModel.notes.value)
                     coroutineScope.launch { viewModel.insertItem(item) }
                 }
-                navController.navigate("Todo_List")
+                navController.navigate("Todo_List"){
+                    popUpTo("Todo_List") { inclusive = true }
+                }
             }){
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_save_24),
@@ -91,6 +99,18 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
                 Text("  SAVE")
+            }
+            if (todoId is Long) {
+                Button(onClick = {
+                    newTodoViewModel.openDialog.value = true
+                })
+                {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_delete_24),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
     )
@@ -115,7 +135,7 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel:
         if (todoItem.value is TodoItem) {
             newTodoViewModel.summary.value = todoItem.value!!.itemSummary
             newTodoViewModel.folder.value = todoItem.value!!.itemFolder
-            newTodoViewModel.datePicked.value = LongToStringDate(todoItem.value!!.itemDate)
+            newTodoViewModel.datePicked.value = longToStringDate(todoItem.value!!.itemDate)
             newTodoViewModel.notes.value = todoItem.value!!.itemNotes
         }
     }
@@ -182,7 +202,7 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel:
                          com.marosseleng.compose.material3.datetimepickers.date.ui.dialog.DatePickerDialog(
                              onDismissRequest = { datePickerShown.value = false },
                              onDateChange = { localDate ->
-                                 newTodoViewModel.datePicked.value = DateFormatUK(localDate)
+                                 newTodoViewModel.datePicked.value = dateFormatUK(localDate)
                                  datePickerShown.value = false
                             },
                              title = { Text("Select a due date:")},
@@ -204,4 +224,45 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel:
             }  //Notes Field
         }
     }
+}
+
+@ExperimentalMaterial3Api
+@Composable
+fun DeleteConfirm(newTodoViewModel: NewTodoViewModel, navController: NavController, todoId: Long, viewModel: DatabaseViewModel) {
+    val coroutineScope = rememberCoroutineScope()
+
+    AlertDialog(
+        onDismissRequest = { newTodoViewModel.openDialog.value = false },
+        title = {
+            Text(text = "Are you sure you want to delete this?")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val item = TodoItem(
+                        itemId = todoId,
+                        listId = 1L,
+                        itemSummary = newTodoViewModel.summary.value.toString(),
+                        itemFolder = newTodoViewModel.folder.value.toString(),
+                        itemDate = stringToLongDate(newTodoViewModel.datePicked.value.toString()),
+                        itemNotes = newTodoViewModel.notes.value)
+
+                    coroutineScope.launch { viewModel.delete(item) }
+
+                    newTodoViewModel.openDialog.value = false
+
+                    navController.navigate("Todo_List"  ){
+                        popUpTo("Todo_List") { inclusive = true }
+                    }
+                },
+                content = { Text("Yes") }
+            )
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { newTodoViewModel.openDialog.value = false },
+                content = { Text("No") }
+            )
+        }
+    )
 }

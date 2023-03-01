@@ -13,23 +13,23 @@ interface DatabaseInterface {
 
     //Add New
     @Insert
-    fun insertList(list: TodoList)
+    suspend fun insertList(list: TodoList)
     @Insert
     suspend fun insertItem(item: TodoItem)
     @Insert
-    fun insertAttachment(attachment: TodoItemAttachment)
+    suspend fun insertAttachment(attachment: TodoItemAttachment)
 
     @Update
-    fun update(list: TodoList)
+    suspend fun updateList(list: TodoList)
     @Update
-    suspend fun update(item: TodoItem)
+    suspend fun updateItem(item: TodoItem)
 
     @Delete
-    fun delete(list: TodoList)
+    suspend fun delete(list: TodoList)
     @Delete
-    fun delete(item: TodoItem)
+    suspend fun delete(item: TodoItem)
     @Delete
-    fun delete(attachment: TodoItemAttachment)
+    suspend fun delete(attachment: TodoItemAttachment)
 
     // Get a list of all lists.
     @Query("SELECT * from todo_list")
@@ -57,13 +57,13 @@ interface DatabaseInterface {
 
     //Update completion status
     @Query("UPDATE todo_item SET item_complete = NOT item_complete WHERE itemId = :key")
-    fun changeComplete(key: Long)
+    suspend fun changeComplete(key: Long)
 
     // Clear all todos from a list
     @Query("DELETE FROM todo_item WHERE list_id = :key")
-    fun clearTodoItems(key: Long)
+    suspend fun clearTodoItems(key: Long)
 
     // Clear all attachments from a item
     @Query("DELETE FROM todo_item_attachment WHERE item_id = :key")
-    fun clearTodoItemAttachments(key: Long)
+    suspend fun clearTodoItemAttachments(key: Long)
 }
