@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,6 +18,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.R
@@ -41,7 +45,7 @@ fun AddEditTodo(navController: NavController, viewModel: DatabaseViewModel, todo
                     DeleteConfirm(newTodoViewModel, navController, todoId, viewModel)
                 }
 
-                ContentAddNew(viewModel, todoId, newTodoViewModel)
+                ContentAddEdit(viewModel, todoId, newTodoViewModel)
             }
         }
     )
@@ -119,7 +123,7 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
 @OptIn(ExperimentalComposeUiApi::class)
 @ExperimentalMaterial3Api
 @Composable
-fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
+fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
     val todoItem: State<TodoItem?>
     val expanded = remember { mutableStateOf(false) }
     val datePickerShown = remember { mutableStateOf(false) }
@@ -222,6 +226,51 @@ fun ContentAddNew(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel:
                         .height(200.dp)
                 )
             }  //Notes Field
+            item(5){
+                Column{
+                    Row{
+                        Text("Attachments")
+                    }
+                    Box{
+                        Button(
+                            onClick = {  },
+                            shape = CircleShape,
+                            modifier = Modifier.size(50.dp).align(Alignment.TopEnd).offset((-5).dp, (-25).dp).zIndex(1f),
+                            contentPadding = PaddingValues(0.dp)
+                        ){
+                            Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary)
+                        }
+
+                        OutlinedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 200.dp)
+                                .heightIn(max = 1000.dp),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Adaptive(minSize = 100.dp),
+                                modifier = Modifier
+                                    .padding(top = 10.dp, bottom = 25.dp, start = 10.dp, end = 10.dp)
+                                    .offset(y = 15.dp)
+                                    .align(Alignment.CenterHorizontally)
+                            ){
+                                items(15){
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_insert_drive_file_24),
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .defaultMinSize(100.dp, 100.dp)
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
         }
     }
 }

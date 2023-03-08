@@ -175,12 +175,11 @@ fun ExpandableView(todoItemsList: List<TodoItem>, isExpanded: Boolean, navContro
                         ){
                             if (item.itemNotes != "" && item.itemNotes != null) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.baseline_note_24),
+                                    painter = painterResource(id = R.drawable.baseline_insert_drive_file_24),
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier
                                         .fillMaxHeight()
-                                        .defaultMinSize(28.dp, 28.dp)
                                 )
                             }
                         }
