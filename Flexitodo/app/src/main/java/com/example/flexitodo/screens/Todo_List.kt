@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
@@ -70,9 +69,9 @@ fun TopAppBarTodoList(navController: NavController, viewModel: DatabaseViewModel
                 },
                 modifier = Modifier.scale(0.8f)
             )
-            IconButton(onClick = { navController.navigate("Settings") }) {
-                Icon(Icons.Filled.Settings, null)
-            }
+//            IconButton(onClick = { navController.navigate("Settings") }) {
+//                Icon(Icons.Filled.Settings, null)
+//            }
             IconButton(onClick = { navController.navigate("Add_Todo") }) {
                 Icon(Icons.Filled.Add, null)
             }
