@@ -1,6 +1,10 @@
 package com.example.flexitodo.screens
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.CalendarContract
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,9 +20,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.example.flexitodo.*
 import com.example.flexitodo.R
@@ -29,6 +36,7 @@ import com.example.flexitodo.database.TodoItem
 import com.marosseleng.compose.material3.*
 import kotlinx.coroutines.launch
 import java.util.*
+
 
 @ExperimentalMaterial3Api
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -127,6 +135,8 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
     val todoItem: State<TodoItem?>
     val expanded = remember { mutableStateOf(false) }
     val datePickerShown = remember { mutableStateOf(false) }
+    val isDateSet = remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val summary = newTodoViewModel.summary.observeAsState(initial = null)
     val folder = newTodoViewModel.folder.observeAsState(initial = "Today")
@@ -141,6 +151,10 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
             newTodoViewModel.folder.value = todoItem.value!!.itemFolder
             newTodoViewModel.datePicked.value = longToStringDate(todoItem.value!!.itemDate)
             newTodoViewModel.notes.value = todoItem.value!!.itemNotes
+
+            if (newTodoViewModel.datePicked.value !== null && newTodoViewModel.datePicked.value !== "") {
+                isDateSet.value = true
+            }
         }
     }
 
@@ -191,7 +205,9 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                              .weight(1f)
                      )
                      Button(
-                         onClick = { newTodoViewModel.datePicked.value = "" },
+                         onClick = {
+                             newTodoViewModel.datePicked.value = ""
+                             isDateSet.value = false },
                          shape = CircleShape,
                          modifier = Modifier.size(50.dp),
                          contentPadding = PaddingValues(0.dp)
@@ -208,6 +224,7 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                              onDateChange = { localDate ->
                                  newTodoViewModel.datePicked.value = dateFormatUK(localDate)
                                  datePickerShown.value = false
+                                 isDateSet.value = true
                             },
                              title = { Text("Select a due date:")},
                              locale = Locale("en", "UK")
@@ -217,6 +234,32 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                  }
             }  //Date Field
             item(4){
+                if (todoId is Long){
+                    Button(
+                        onClick = {
+                            val date = stringToLongDate(newTodoViewModel.datePicked.value.toString())
+                            val dateStart = System.currentTimeMillis()
+                            val dateEnd = dateStart+60
+                            val intent = Intent(Intent.ACTION_INSERT)
+                                .setData(CalendarContract.Events.CONTENT_URI)
+                                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, dateStart)
+                                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, dateEnd)
+                                //.putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+                                .putExtra(CalendarContract.Events.TITLE, newTodoViewModel.summary.value.toString())
+                                .putExtra(CalendarContract.Events.DESCRIPTION, newTodoViewModel.notes.value.toString())
+                                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
+                            startActivity(context, intent, null)
+                            //startActivity(context, Intent.createChooser(intent, "Select a calendar"), null)
+                        },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        shape = RectangleShape,
+                        enabled = isDateSet.value)
+                    {
+                        Text("Add Reminder To Calendar")
+                    }
+                }
+            }  //Add to Calendar Button
+            item(5){
                 OutlinedTextField(
                     value = notes.value.toString(),
                     onValueChange = { newTodoViewModel.notes.value = it },
@@ -226,16 +269,20 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                         .height(200.dp)
                 )
             }  //Notes Field
-            item(5){
+            item(6){
                 Column{
                     Row{
-                        Text("Attachments")
+                        Text("Attachments (not implemented)")
                     }
                     Box{
                         Button(
                             onClick = {  },
                             shape = CircleShape,
-                            modifier = Modifier.size(50.dp).align(Alignment.TopEnd).offset((-5).dp, (-25).dp).zIndex(1f),
+                            modifier = Modifier
+                                .size(50.dp)
+                                .align(Alignment.TopEnd)
+                                .offset((-5).dp, (-25).dp)
+                                .zIndex(1f),
                             contentPadding = PaddingValues(0.dp)
                         ){
                             Icon(Icons.Filled.Add, null, tint = MaterialTheme.colorScheme.onPrimary)
@@ -251,11 +298,16 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                             LazyVerticalGrid(
                                 columns = GridCells.Adaptive(minSize = 100.dp),
                                 modifier = Modifier
-                                    .padding(top = 10.dp, bottom = 25.dp, start = 10.dp, end = 10.dp)
+                                    .padding(
+                                        top = 10.dp,
+                                        bottom = 25.dp,
+                                        start = 10.dp,
+                                        end = 10.dp
+                                    )
                                     .offset(y = 15.dp)
                                     .align(Alignment.CenterHorizontally)
                             ){
-                                items(15){
+                                items(6){
                                     Icon(
                                         painter = painterResource(id = R.drawable.outline_insert_drive_file_24),
                                         contentDescription = null,
@@ -266,11 +318,10 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                                     )
                                 }
                             }
-
                         }
                     }
                 }
-            }
+            }  //Attachments Field
         }
     }
 }
