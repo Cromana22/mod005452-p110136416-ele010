@@ -1,10 +1,8 @@
 package com.example.flexitodo.screens
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.CalendarContract
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -235,27 +233,25 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
             }  //Date Field
             item(4){
                 if (todoId is Long){
-                    Button(
-                        onClick = {
-                            val date = stringToLongDate(newTodoViewModel.datePicked.value.toString())
-                            val dateStart = System.currentTimeMillis()
-                            val dateEnd = dateStart+60
-                            val intent = Intent(Intent.ACTION_INSERT)
-                                .setData(CalendarContract.Events.CONTENT_URI)
-                                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, dateStart)
-                                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, dateEnd)
-                                //.putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
-                                .putExtra(CalendarContract.Events.TITLE, newTodoViewModel.summary.value.toString())
-                                .putExtra(CalendarContract.Events.DESCRIPTION, newTodoViewModel.notes.value.toString())
-                                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
-                            startActivity(context, intent, null)
-                            //startActivity(context, Intent.createChooser(intent, "Select a calendar"), null)
-                        },
-                        modifier = Modifier.fillMaxWidth(0.8f),
-                        shape = RectangleShape,
-                        enabled = isDateSet.value)
-                    {
-                        Text("Add Reminder To Calendar")
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()){
+                        Button(
+                            onClick = {
+                                val date = stringToLongDate(newTodoViewModel.datePicked.value.toString())
+                                val intent = Intent(Intent.ACTION_INSERT)
+                                    .setData(CalendarContract.Events.CONTENT_URI)
+                                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, date)
+                                    .putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+                                    .putExtra(CalendarContract.Events.TITLE, newTodoViewModel.summary.value.toString())
+                                    .putExtra(CalendarContract.Events.DESCRIPTION, newTodoViewModel.notes.value.toString())
+                                    .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY)
+                                startActivity(context, intent, null)
+                            },
+                            modifier = Modifier.fillMaxWidth(0.8f),
+                            shape = RectangleShape,
+                            enabled = isDateSet.value)
+                        {
+                            Text("Add Reminder To Calendar")
+                        }
                     }
                 }
             }  //Add to Calendar Button
