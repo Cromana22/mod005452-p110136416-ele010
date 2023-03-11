@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -151,16 +152,17 @@ fun ExpandableView(todoItemsList: List<TodoItem>, isExpanded: Boolean, navContro
                     ) {
                         Text(
                             text = item.itemSummary,
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             textDecoration = if (item.itemComplete) TextDecoration.LineThrough else TextDecoration.None,
                             fontWeight = if (item.itemDate is Long && item.itemDate!! <= System.currentTimeMillis()) FontWeight.Bold else FontWeight.Normal,
                             color = MaterialTheme.colorScheme.onBackground,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.fillMaxWidth(0.5f)
                         )
 
                         Text(
                             text = longToStringDate(item.itemDate),
-                            fontSize = 16.sp,
+                            fontSize = 14.sp,
                             textDecoration = if (item.itemComplete) TextDecoration.LineThrough else TextDecoration.None,
                             fontWeight = if (item.itemDate is Long && item.itemDate!! <= System.currentTimeMillis()) FontWeight.Bold else FontWeight.Normal,
                             color = MaterialTheme.colorScheme.onBackground,

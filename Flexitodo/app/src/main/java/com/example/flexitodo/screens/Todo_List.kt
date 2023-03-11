@@ -6,11 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
@@ -25,7 +24,6 @@ import com.example.flexitodo.database.TodoList
 @ExperimentalMaterial3Api
 @Composable
 fun TodoList(navController: NavController, viewModel: DatabaseViewModel, todoViewModel: TodoViewModel) {
-
     Scaffold(
         topBar = { TopAppBarTodoList(navController, viewModel, todoViewModel) },
         content = { paddingValues ->
@@ -92,8 +90,10 @@ fun ContentTodoList(viewModel: DatabaseViewModel, paddingValues: PaddingValues, 
         if (folders.value.isEmpty()){
            item(1){
                Box(modifier = Modifier.fillMaxSize()){
-                   Button(onClick = { navController.navigate("Add_Todo") }) {
-                       Text("Click to add your first todo!")
+                   Box(modifier = Modifier.align(Alignment.Center)){
+                       Button(onClick = { navController.navigate("Add_Todo")}) {
+                           Text("Click to add your first todo!")
+                       }
                    }
                }
            }
