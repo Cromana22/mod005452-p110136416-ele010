@@ -4,12 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PermissionInfo
 import android.location.Location
-import android.os.Looper
 import android.provider.CalendarContract
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,7 +36,6 @@ import com.example.flexitodo.components.longToStringDate
 import com.example.flexitodo.components.stringToLongDate
 import com.example.flexitodo.database.TodoItem
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
 import com.marosseleng.compose.material3.*
@@ -156,7 +151,10 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
     val location = remember { mutableStateOf<Location?>(null) }
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-    
+    val apiKey = "LMRPVJN73ZGNK8BSMX6MGJ3F7"
+    val apiURL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"+
+            location.value?.latitude + "," + location.value?.longitude+"/"+
+            System.currentTimeMillis()+"?key=" + apiKey
 
     if (todoId !== null) {
         todoItem = viewModel.getTodoItemDetails(todoId).observeAsState(initial = null)
@@ -277,8 +275,10 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                     Button(
                         onClick = {
                             if (permissionState.hasPermission) {
-                                fusedLocationClient.lastLocation.addOnSuccessListener { location.value = it }
-                                newTodoViewModel.notes.value = newTodoViewModel.notes.value + "\n" + location.value?.latitude + " " + location.value?.longitude
+                                fusedLocationClient.lastLocation.addOnSuccessListener {
+                                    location.value = it
+                                    newTodoViewModel.notes.value = newTodoViewModel.notes.value + "\n " + apiURL
+                                }
                             } else {
                                 // Request location permission
                                 ActivityCompat.requestPermissions(
@@ -401,47 +401,4 @@ fun DeleteConfirm(newTodoViewModel: NewTodoViewModel, navController: NavControll
             )
         }
     )
-}
-
-@SuppressLint("MissingPermission")
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun getLocation(): State<Location?> {
-    // Create a State variable to hold the location
-    val location = remember { mutableStateOf<Location?>(null) }
-    val context = LocalContext.current
-
-    // Create a FusedLocationProviderClient
-    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
-
-    // Check location permission
-    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
-
-    // Get location
-    if (permissionState.hasPermission) {
-        val locationRequest =
-            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).apply {
-                setMinUpdateIntervalMillis(5000)
-            }.build()
-
-        val locationCallback = object : LocationCallback() {
-             override fun onLocationResult(p0: LocationResult) {
-                p0.let {
-                    location.value = it.lastLocation
-                }
-            }
-        }
-
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
-
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-
-    }
-
-    // Return the location State variable
-    return location
 }
