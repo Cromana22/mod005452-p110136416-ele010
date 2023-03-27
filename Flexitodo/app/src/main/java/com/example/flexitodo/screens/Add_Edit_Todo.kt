@@ -1,8 +1,15 @@
 package com.example.flexitodo.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PermissionInfo
+import android.location.Location
+import android.os.Looper
 import android.provider.CalendarContract
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import com.example.flexitodo.*
@@ -31,6 +39,10 @@ import com.example.flexitodo.components.dateFormatUK
 import com.example.flexitodo.components.longToStringDate
 import com.example.flexitodo.components.stringToLongDate
 import com.example.flexitodo.database.TodoItem
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.location.*
 import com.marosseleng.compose.material3.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -40,7 +52,6 @@ import java.util.*
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddEditTodo(navController: NavController, viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
-
     val openD = newTodoViewModel.openDialog.observeAsState()
 
     Scaffold(
@@ -126,7 +137,8 @@ fun TopAppBarAddNew(navController: NavController, todoId: Long?, newTodoViewMode
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalPermissionsApi::class)
 @ExperimentalMaterial3Api
 @Composable
 fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel: NewTodoViewModel) {
@@ -140,6 +152,11 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
     val folder = newTodoViewModel.folder.observeAsState(initial = "Today")
     val datePicked = newTodoViewModel.datePicked.observeAsState(initial = null)
     val notes = newTodoViewModel.notes.observeAsState(initial = null)
+
+    val location = remember { mutableStateOf<Location?>(null) }
+    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    
 
     if (todoId !== null) {
         todoItem = viewModel.getTodoItemDetails(todoId).observeAsState(initial = null)
@@ -256,6 +273,29 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                 }
             }  //Add to Calendar Button
             item(5){
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()){
+                    Button(
+                        onClick = {
+                            if (permissionState.hasPermission) {
+                                fusedLocationClient.lastLocation.addOnSuccessListener { location.value = it }
+                                newTodoViewModel.notes.value = newTodoViewModel.notes.value + "\n" + location.value?.latitude + " " + location.value?.longitude
+                            } else {
+                                // Request location permission
+                                ActivityCompat.requestPermissions(
+                                    context as Activity,
+                                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                                    1
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.8f),
+                        shape = RectangleShape)
+                    {
+                        Text("Log the current weather")
+                    }
+                }
+            }  //Get Weather Button
+            item(6){
                 OutlinedTextField(
                     value = notes.value.toString(),
                     onValueChange = { newTodoViewModel.notes.value = it },
@@ -265,7 +305,7 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                         .height(200.dp)
                 )
             }  //Notes Field
-            item(6){
+            item(7){
                 Column{
                     Row{
                         Text("Attachments (not implemented)")
@@ -361,4 +401,47 @@ fun DeleteConfirm(newTodoViewModel: NewTodoViewModel, navController: NavControll
             )
         }
     )
+}
+
+@SuppressLint("MissingPermission")
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun getLocation(): State<Location?> {
+    // Create a State variable to hold the location
+    val location = remember { mutableStateOf<Location?>(null) }
+    val context = LocalContext.current
+
+    // Create a FusedLocationProviderClient
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    // Check location permission
+    val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+
+    // Get location
+    if (permissionState.hasPermission) {
+        val locationRequest =
+            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000).apply {
+                setMinUpdateIntervalMillis(5000)
+            }.build()
+
+        val locationCallback = object : LocationCallback() {
+             override fun onLocationResult(p0: LocationResult) {
+                p0.let {
+                    location.value = it.lastLocation
+                }
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
+
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+
+    }
+
+    // Return the location State variable
+    return location
 }
