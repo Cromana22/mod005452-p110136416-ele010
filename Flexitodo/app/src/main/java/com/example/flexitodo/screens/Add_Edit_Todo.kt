@@ -6,6 +6,8 @@ import android.app.Activity
 import android.content.Intent
 import android.location.Location
 import android.provider.CalendarContract
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,13 +35,19 @@ import com.example.flexitodo.*
 import com.example.flexitodo.R
 import com.example.flexitodo.components.dateFormatUK
 import com.example.flexitodo.components.longToStringDate
+import com.example.flexitodo.components.longToStringDateApi
 import com.example.flexitodo.components.stringToLongDate
 import com.example.flexitodo.database.TodoItem
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.*
 import com.marosseleng.compose.material3.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.*
+import okhttp3.*
+import java.io.IOException
 import java.util.*
 
 
@@ -151,10 +159,11 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
     val location = remember { mutableStateOf<Location?>(null) }
     val permissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
     val apiKey = "LMRPVJN73ZGNK8BSMX6MGJ3F7"
     val apiURL = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/"+
             location.value?.latitude + "," + location.value?.longitude+"/"+
-            System.currentTimeMillis()+"?key=" + apiKey
+            longToStringDateApi(stringToLongDate(datePicked.value.toString())) +"?key=" + apiKey
 
     if (todoId !== null) {
         todoItem = viewModel.getTodoItemDetails(todoId).observeAsState(initial = null)
@@ -275,9 +284,15 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                     Button(
                         onClick = {
                             if (permissionState.hasPermission) {
-                                fusedLocationClient.lastLocation.addOnSuccessListener {
-                                    location.value = it
-                                    newTodoViewModel.notes.value = newTodoViewModel.notes.value + "\n " + apiURL
+
+                                fusedLocationClient.lastLocation.addOnSuccessListener { locationResponse: Location? ->
+                                    if (locationResponse != null) {
+                                        location.value = locationResponse
+                                        apiCall(apiURL, newTodoViewModel)
+                                    }
+                                    else {
+                                        Toast.makeText(context, "Location request unsuccessful. Please try again.", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             } else {
                                 // Request location permission
@@ -289,9 +304,10 @@ fun ContentAddEdit(viewModel: DatabaseViewModel, todoId: Long?, newTodoViewModel
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.8f),
-                        shape = RectangleShape)
+                        shape = RectangleShape,
+                        enabled = isDateSet.value)
                     {
-                        Text("Log the current weather")
+                        Text("Add expected weather to Notes.")
                     }
                 }
             }  //Get Weather Button
@@ -401,4 +417,45 @@ fun DeleteConfirm(newTodoViewModel: NewTodoViewModel, navController: NavControll
             )
         }
     )
+}
+
+fun apiCall(apiURL: String, newTodoViewModel: NewTodoViewModel) {
+    val client = OkHttpClient()
+    val request = Request.Builder().url(apiURL).build()
+    Log.i("JEN", apiURL)
+
+    client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+            Log.e("WEATHER", "Api Call Failed with error $e")
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+            val json = response.body?.string() ?: ""
+            val weather = parseJson(json)
+
+            if (newTodoViewModel.notes.value === null || newTodoViewModel.notes.value === "" ) {
+                newTodoViewModel.notes.postValue("The weather on " + newTodoViewModel.datePicked.value +
+                        " is expected to be: " + weather + ".")
+            }
+            else {
+                newTodoViewModel.notes.postValue(newTodoViewModel.notes.value + "\nThe weather on " +
+                        newTodoViewModel.datePicked.value + " is expected to be: " +
+                        weather + ".")
+            }
+        }
+    })
+}
+
+fun parseJson(json: String): String {
+    val root = Json.parseToJsonElement(json)
+    var weather = "Unknown"
+    val conditions = root.jsonObject["days"]?.jsonArray?.map {
+        it.jsonObject["conditions"]?.jsonPrimitive?.contentOrNull
+    }
+
+    if (conditions != null && conditions.isNotEmpty()) {
+        weather = conditions[0].toString()
+    }
+
+    return weather
 }

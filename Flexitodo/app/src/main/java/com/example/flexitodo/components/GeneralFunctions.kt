@@ -33,7 +33,16 @@ fun stringToLongDate(string: String): Long? {
         val date = sdf.parse(string)
         longDate = date.time
     }
-    catch (e: ParseException) { e.printStackTrace() }
+    catch (e: ParseException) {  }
 
     return longDate
+}
+
+fun longToStringDateApi(long: Long?): String {
+    return if (long is Long) {
+        SimpleDateFormat("yyyy-MM-dd").format(Date(long))
+    }
+    else {
+        ""
+    }
 }

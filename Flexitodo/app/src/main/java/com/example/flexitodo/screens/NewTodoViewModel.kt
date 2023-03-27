@@ -12,6 +12,5 @@ class NewTodoViewModel(application: Application) : AndroidViewModel(application)
     var folder: MutableLiveData<String> = MutableLiveData("Today")
     var datePicked: MutableLiveData<String?> = MutableLiveData("")
     var notes: MutableLiveData<String> = MutableLiveData("")
-
     val openDialog: MutableLiveData<Boolean> = MutableLiveData(false)
 }
